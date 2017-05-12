@@ -78,6 +78,10 @@ class Sequencer {
             // threads on the next tick.
             ranFirstTick = true;
         }
+        if (this.runtime.performance.performanceMetricsOn && this.timer.timeElapsed() >= WORK_TIME) {
+            this.runtime.performance.addWorkTimeReached();
+        }
+
         // Filter inactive threads from `this.runtime.threads`.
         this.runtime.threads = this.runtime.threads.filter(thread => {
             if (doneThreads.indexOf(thread) > -1) {

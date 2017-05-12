@@ -2,6 +2,8 @@ const EventEmitter = require('events');
 const Sequencer = require('./sequencer');
 const Blocks = require('./blocks');
 const Thread = require('./thread');
+const PerformanceMetrics = require('./performance');
+const now = require('performance-now');
 
 // Virtual I/O devices.
 const Clock = require('../io/clock');
@@ -158,6 +160,9 @@ class Runtime extends EventEmitter {
             keyboard: new Keyboard(this),
             mouse: new Mouse(this)
         };
+
+        // Performance metrics object
+        this.performance = new PerformanceMetrics();
     }
 
     /**
@@ -646,6 +651,8 @@ class Runtime extends EventEmitter {
      */
     _step () {
         this._refreshTargets = false;
+
+        const stepStart = now();
         // Find all edge-activated hats, and add them to threads to be evaluated.
         for (const hatType in this._hats) {
             if (!this._hats.hasOwnProperty(hatType)) continue;
@@ -663,7 +670,12 @@ class Runtime extends EventEmitter {
             // @todo: Only render when this.redrawRequested or clones rendered.
             this.renderer.draw();
         }
+
         if (this._refreshTargets) this.emit(Runtime.TARGETS_UPDATE);
+        
+        if (this.performance.performanceMetricsOn) {
+            this.performance.addStepTime(now() - stepStart);
+        }
     }
 
     /**
