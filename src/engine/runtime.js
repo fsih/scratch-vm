@@ -672,8 +672,8 @@ class Runtime extends EventEmitter {
         }
 
         if (this._refreshTargets) this.emit(Runtime.TARGETS_UPDATE);
-        
-        if (this.performance.performanceMetricsOn) {
+
+        if (this.performance.on()) {
             this.performance.addStepTime(now() - stepStart);
         }
     }
