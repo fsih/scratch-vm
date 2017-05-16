@@ -5,8 +5,8 @@
 
 class PerformanceMetrics {
     constructor () {
-        // Whether to log performance. Used for testing. Should not be true in prod.
-        this.performanceMetricsOn = true; // TODO add thing in gui for here where it will never be true in production
+        // Whether to log performance. Used for testing. Always off in prod.
+        this._performanceMetricsOn = false;
         // Number of steps to take before printing a log. Logs the median values.
         // Set to 0 to aggregate forever.
         this._stepsBeforeLogging = 10;
@@ -27,7 +27,7 @@ class PerformanceMetrics {
     }
 
     addStepTime (stepTime) {
-        if (!this.performanceMetricsOn) return;
+        if (!this._performanceMetricsOn) return;
 
         this.data.stepTimes.push(stepTime);
         if (this._stepsBeforeLogging > 0 && this.data.stepTimes.length >= this._stepsBeforeLogging) {
@@ -37,12 +37,22 @@ class PerformanceMetrics {
     }
 
     addWorkTimeReached () {
-        if (!this.performanceMetricsOn) return;
+        if (!this._performanceMetricsOn) return;
         this.data.ticksWorkTimeReached++;
     }
 
-    setStepsBeforeLogging(steps) {
+    setStepsBeforeLogging (steps) {
         this._stepsBeforeLogging = steps;
+    }
+
+    turnOn () {
+        if (process.env.DEBUG) {
+            this._performanceMetricsOn = true;
+        }
+    }
+
+    on () {
+        return this._performanceMetricsOn;
     }
 
     printMetrics () {

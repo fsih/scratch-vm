@@ -10,7 +10,7 @@ const project = extract(uri);
 
 test('control', t => {
     const vm = new VirtualMachine();
-    vm.runtime.performance.performanceMetricsOn = true;
+    vm.runtime.performance.turnOn();
     vm.runtime.performance.setStepsBeforeLogging(0);
     attachTestStorage(vm);
 

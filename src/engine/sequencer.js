@@ -78,7 +78,7 @@ class Sequencer {
             // threads on the next tick.
             ranFirstTick = true;
         }
-        if (this.runtime.performance.performanceMetricsOn && this.timer.timeElapsed() >= WORK_TIME) {
+        if (this.runtime.performance.on() && this.timer.timeElapsed() >= WORK_TIME) {
             this.runtime.performance.addWorkTimeReached();
         }
 

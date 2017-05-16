@@ -119,6 +119,9 @@ module.exports = [
             ])
         },
         plugins: base.plugins.concat([
+            new webpack.DefinePlugin({
+                'process.env.DEBUG': Boolean(process.env.DEBUG)
+            }),
             new CopyWebpackPlugin([{
                 from: 'node_modules/scratch-blocks/media',
                 to: 'media'
