@@ -33,3 +33,5 @@ after_script:
     git config --global user.name $(git log --pretty=format:"%an" -n1)
     npm run --silent deploy -- -x -r $GH_PAGES_REPO
   fi
+after_success:
+  - ./travis-after-success-bench.sh
