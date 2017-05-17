@@ -9,10 +9,10 @@ if [ "${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}" != "deploy" ]; then
     cd  "${TRAVIS_REPO_SLUG}-bench" && \
     # Bench master
     git checkout develop && \
-    echo hello > hellofile && \
+    echo ${TRAVIS_COMMIT} > hellofile && \
     # Bench variable
     git checkout ${TRAVIS_COMMIT} && \
-    echo bye > byefile && \
+    echo ${TRAVIS_COMMIT} > byefile && \
     cat hellofile && \
     cat byefile
 fi
