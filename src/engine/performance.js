@@ -48,9 +48,9 @@ class PerformanceMetrics {
     }
 
     turnOn () {
-        //if (process.env.DEBUG) {
+        if (process.env.DEBUG) {
             this._performanceMetricsOn = true;
-        //}
+        }
     }
 
     on () {
@@ -58,11 +58,11 @@ class PerformanceMetrics {
     }
 
     printMetrics () {
-        log.info('Step time: ' + this._findMedian(this.data.stepTimes).toFixed(2));
+        log.info('Step time: ', this._findMedian(this.data.stepTimes).toFixed(2));
         if (this.data.ticksWorkTimeReached > 0) {
-            log.info('Work time maxed: ' +
-                this.data.ticksWorkTimeReached + '/' + this.data.stepTimes.length +
-                ' (' + ((this.data.ticksWorkTimeReached * 100.0) / this.data.stepTimes.length) + '%)');
+            log.info('Work time maxed: ',
+                this.data.ticksWorkTimeReached, '/', this.data.stepTimes.length,
+                ' (', ((this.data.ticksWorkTimeReached * 100.0) / this.data.stepTimes.length), '%)');
         }
     }
 
