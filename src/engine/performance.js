@@ -48,9 +48,9 @@ class PerformanceMetrics {
     }
 
     turnOn () {
-        if (process.env.DEBUG) {
-            this._performanceMetricsOn = true;
-        }
+        // if (process.env.DEBUG) {
+        this._performanceMetricsOn = true;
+        // }
     }
 
     on () {
