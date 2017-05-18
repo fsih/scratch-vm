@@ -12,6 +12,8 @@ env:
 install:
 - npm --production=false install
 - npm --production=false update
+before_script:
+- chmod a+x travis-after-success-bench.sh
 after_script:
 - |
   # RELEASE_BRANCHES and NPM_TOKEN defined in Travis settings panel
