@@ -19,6 +19,7 @@ class PerformanceMetrics {
             // Number of steps done by sequencer where the work time was maxed out
             ticksWorkTimeReached: 0
         };
+        this.numStepsBeforeCallback = null;
         // Set performance data
         this.reset();
     }
@@ -36,6 +37,11 @@ class PerformanceMetrics {
             this.printMetrics();
             this.reset();
         }
+        if (this.numStepsBeforeCallback !== null && this.numStepsBeforeCallback <= this.data.stepTimes.length) {
+            this.numStepsBeforeCallback = null;
+            this.callback();
+            this.callback = null;
+        }
     }
 
     addWorkTimeReached () {
@@ -43,14 +49,24 @@ class PerformanceMetrics {
         this.data.ticksWorkTimeReached++;
     }
 
+    // Only one calback at a time, for now
+    callbackAfterNumSteps (callback, numStepsBeforeCallback) {
+        this.callback = callback;
+        this.numStepsBeforeCallback = numStepsBeforeCallback;
+    }
+
     setStepsBeforeLogging (steps) {
         this._stepsBeforeLogging = steps;
     }
 
-    turnOn () {
+    turnOn (skipLogging) {
         // if (process.env.DEBUG) {
         this._performanceMetricsOn = true;
         // }
+
+        if (skipLogging) {
+            this.setStepsBeforeLogging(0);
+        }
     }
 
     on () {

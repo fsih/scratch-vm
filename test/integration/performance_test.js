@@ -10,8 +10,14 @@ const project = extract(uri);
 
 test('control', t => {
     const vm = new VirtualMachine();
-    vm.runtime.performance.turnOn();
-    vm.runtime.performance.setStepsBeforeLogging(0);
+
+    let finish = function () {
+        vm.getPlaygroundData();
+        vm.stopAll();
+    };
+
+    vm.runtime.performance.turnOn(true);
+    vm.runtime.performance.callbackAfterNumSteps(finish, 200);
     attachTestStorage(vm);
 
     // Evaluate playground data and exit
@@ -34,10 +40,4 @@ test('control', t => {
             vm.greenFlag();
         });
     });
-
-    // After two seconds, get playground data and stop
-    setTimeout(() => {
-        vm.getPlaygroundData();
-        vm.stopAll();
-    }, 1000);
 });
