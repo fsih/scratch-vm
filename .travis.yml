@@ -10,8 +10,8 @@ env:
   global:
   - DEBUG=true
 install:
-- npm --production=false install
-- npm --production=false update
+- npm install
+- npm update
 before_script:
 - chmod a+x travis-after-success-bench.sh
 after_script:
