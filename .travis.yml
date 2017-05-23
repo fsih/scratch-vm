@@ -8,10 +8,10 @@ cache:
   - node_modules
 env:
   global:
-  - DEBUG=true
+  - NODE_ENV=production
 install:
-- npm install
-- npm update
+- npm --production=false install
+- npm --production=false update
 before_script:
 - chmod a+x travis-after-success-bench.sh
 after_script:

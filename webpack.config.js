@@ -22,7 +22,7 @@ const base = {
     },
     plugins: [
         new webpack.DefinePlugin({
-            'process.env.DEBUG': Boolean(process.env.DEBUG)
+            'process.env.NODE_ENV': '"' + process.env.NODE_ENV + '"'
         }),
         new webpack.optimize.UglifyJsPlugin({
             include: /\.min\.js$/,

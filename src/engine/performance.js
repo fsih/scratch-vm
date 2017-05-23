@@ -60,9 +60,9 @@ class PerformanceMetrics {
     }
 
     turnOn (skipLogging) {
-        // if (process.env.DEBUG) {
-        this._performanceMetricsOn = true;
-        // }
+        if (process.env.NODE_ENV !== 'production') {
+            this._performanceMetricsOn = true;
+        }
 
         if (skipLogging) {
             this.setStepsBeforeLogging(0);
