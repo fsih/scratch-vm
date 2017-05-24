@@ -2,16 +2,26 @@ language: node_js
 node_js:
 - 6
 - node
-sudo: false
+dist: trusty
+sudo: required
 cache:
   directories:
   - node_modules
 env:
   global:
   - NODE_ENV=production
+before_install:
+  - wget ftp://crispeditor.co.uk/pub/release/website/dtrace/dtrace-20160613.tar.bz2
+  - bunzip2 < dtrace-20160613.tar.bz2 | tar xvf -
 install:
-- npm --production=false install
-- npm --production=false update
+  - npm --production=false install
+  - npm --production=false update
+  - cd dtrace-20160613
+  - sudo tools/get-deps.pl
+  - make all
+  - sudo make install
+  - sudo make load
+  - cd ..
 before_script:
 - chmod a+x travis-after-success-bench.sh
 after_script:
@@ -39,4 +49,5 @@ after_script:
     npm run --silent deploy -- -x -r $GH_PAGES_REPO
   fi
 after_success:
+  - sudo dtrace -V
   - ./travis-after-success-bench.sh
