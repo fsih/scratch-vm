@@ -50,4 +50,6 @@ after_script:
   fi
 after_success:
   - sudo dtrace -V
+  - sudo dtrace -c ./node_modules/.bin/tap ./test/integration/performance_test.js > out.txt
+  - cat out.txt
   - ./travis-after-success-bench.sh
