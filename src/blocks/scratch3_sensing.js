@@ -1,5 +1,6 @@
 const Cast = require('../util/cast');
 const Timer = require('../util/timer');
+const getMonitorIdForBlockWithArgs = require('../util/get-monitor-id');
 
 class Scratch3SensingBlocks {
     constructor (runtime) {
@@ -89,7 +90,7 @@ class Scratch3SensingBlocks {
                 // This is different from the default toolbox xml id in order to support
                 // importing multiple monitors from the same opcode from sb2 files,
                 // something that is not currently supported in scratch 3.
-                getId: (_, param) => `current_${param}`
+                getId: (_, fields) => getMonitorIdForBlockWithArgs('current', fields) // _${param}`
             }
         };
     }
@@ -142,6 +143,7 @@ class Scratch3SensingBlocks {
         ));
 
         if (currentlyAsking) {
+            this.runtime.emit('SAY', stopTarget, 'say', '');
             if (this._questionList.length > 0) {
                 this._askNextQuestion();
             } else {
@@ -189,6 +191,7 @@ class Scratch3SensingBlocks {
             targetX = util.ioQuery('mouse', 'getScratchX');
             targetY = util.ioQuery('mouse', 'getScratchY');
         } else {
+            args.DISTANCETOMENU = Cast.toString(args.DISTANCETOMENU);
             const distTarget = this.runtime.getSpriteTargetByName(
                 args.DISTANCETOMENU
             );
@@ -280,6 +283,7 @@ class Scratch3SensingBlocks {
         if (args.OBJECT === '_stage_') {
             attrTarget = this.runtime.getTargetForStage();
         } else {
+            args.OBJECT = Cast.toString(args.OBJECT);
             attrTarget = this.runtime.getSpriteTargetByName(args.OBJECT);
         }
 
@@ -312,12 +316,11 @@ class Scratch3SensingBlocks {
             }
         }
 
-        // Variables
+        // Target variables.
         const varName = args.PROPERTY;
-        for (const id in attrTarget.variables) {
-            if (attrTarget.variables[id].name === varName) {
-                return attrTarget.variables[id].value;
-            }
+        const variable = attrTarget.lookupVariableByNameAndType(varName, '', true);
+        if (variable) {
+            return variable.value;
         }
 
         // Otherwise, 0
