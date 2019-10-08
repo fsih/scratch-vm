@@ -549,9 +549,10 @@ class VirtualMachine extends EventEmitter {
      * Add a sprite, this could be .sprite2 or .sprite3. Unpack and validate
      * such a file first.
      * @param {string | object} input A json string, object, or ArrayBuffer representing the project to load.
+     * @param {?boolean} optFitToArtboard - If true, scale down SVGs to fit into the size of the stage.
      * @return {!Promise} Promise that resolves after targets are installed.
      */
-    addSprite (input) {
+    addSprite (input, optFitToArtboard) {
         const errorPrefix = 'Sprite Upload Error:';
         if (typeof input === 'object' && !(input instanceof ArrayBuffer) &&
           !ArrayBuffer.isView(input)) {
@@ -579,10 +580,11 @@ class VirtualMachine extends EventEmitter {
             .then(validatedInput => {
                 const projectVersion = validatedInput[0].projectVersion;
                 if (projectVersion === 2) {
+                    // Don't fit sprite 2's to artboard, for compatibility reasons
                     return this._addSprite2(validatedInput[0], validatedInput[1]);
                 }
                 if (projectVersion === 3) {
-                    return this._addSprite3(validatedInput[0], validatedInput[1]);
+                    return this._addSprite3(validatedInput[0], validatedInput[1], optFitToArtboard);
                 }
                 return Promise.reject(`${errorPrefix} Unable to verify sprite version.`);
             })
@@ -615,13 +617,14 @@ class VirtualMachine extends EventEmitter {
      * Add a single sb3 sprite.
      * @param {object} sprite Object rperesenting 3.0 sprite to be added.
      * @param {?ArrayBuffer} zip Optional zip of assets being referenced by target json
+     * @param {?boolean} optFitToArtboard - If true, scale down SVGs to fit into the size of the stage.
      * @returns {Promise} Promise that resolves after the sprite is added
      */
-    _addSprite3 (sprite, zip) {
+    _addSprite3 (sprite, zip, optFitToArtboard) {
         // Validate & parse
         const sb3 = require('./serialization/sb3');
         return sb3
-            .deserialize(sprite, this.runtime, zip, true)
+            .deserialize(sprite, this.runtime, zip, true, optFitToArtboard)
             .then(({targets, extensions}) => this.installTargets(targets, extensions, false));
     }
 
@@ -951,10 +954,11 @@ class VirtualMachine extends EventEmitter {
      * @property {number} rotationCenterX - the X component of the backdrop's origin.
      * @property {number} rotationCenterY - the Y component of the backdrop's origin.
      * @property {number} [bitmapResolution] - the resolution scale for a bitmap backdrop.
+     * @param {?boolean} optFitToArtboard - If true, scale down SVGs to fit into the size of the stage.
      * @returns {?Promise} - a promise that resolves when the backdrop has been added
      */
-    addBackdrop (md5ext, backdropObject) {
-        return loadCostume(md5ext, backdropObject, this.runtime).then(() => {
+    addBackdrop (md5ext, backdropObject, optFitToArtboard) {
+        return loadCostume(md5ext, backdropObject, this.runtime, optFitToArtboard).then(() => {
             const stage = this.runtime.getTargetForStage();
             stage.addCostume(backdropObject);
             stage.setCostume(stage.getCostumes().length - 1);

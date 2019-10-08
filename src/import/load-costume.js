@@ -1,7 +1,7 @@
 const StringUtil = require('../util/string-util');
 const log = require('../util/log');
 
-const loadVector_ = function (costume, runtime, rotationCenter, optVersion) {
+const loadVector_ = function (costume, runtime, rotationCenter, optVersion, optFitToArtboard) {
     return new Promise(resolve => {
         let svgString = costume.asset.decodeText();
         // SVG Renderer load fixes "quirks" associated with Scratch 2 projects
@@ -9,6 +9,15 @@ const loadVector_ = function (costume, runtime, rotationCenter, optVersion) {
             log.error('No V2 SVG adapter present; SVGs may not render correctly.');
         } else if (optVersion && optVersion === 2 && runtime.v2SvgAdapter) {
             runtime.v2SvgAdapter.loadString(svgString, true /* fromVersion2 */);
+            svgString = runtime.v2SvgAdapter.toString();
+            // Put back into storage
+            const storage = runtime.storage;
+            costume.asset.encodeTextData(svgString, storage.DataFormat.SVG, true);
+            costume.assetId = costume.asset.assetId;
+            costume.md5 = `${costume.assetId}.${costume.dataFormat}`;
+        } else if (optVersion !== 2 && optFitToArtboard) {
+            // When importing non SB2s
+            runtime.v2SvgAdapter.loadString(svgString, false /* fromVersion2 */, true /* fitToArtboard */);
             svgString = runtime.v2SvgAdapter.toString();
             // Put back into storage
             const storage = runtime.storage;
@@ -171,7 +180,7 @@ const fetchBitmapCanvas_ = function (costume, runtime, rotationCenter) {
                 assetMatchesBase: scale === 1 && !textImageElement
             };
         })
-        .catch(() => {
+    .catch(() => {
             // Clean up the text layer properties if it fails to load
             delete costume.textLayerMD5;
             delete costume.textLayerAsset;
@@ -241,9 +250,10 @@ const loadBitmap_ = function (costume, runtime, _rotationCenter) {
  * @param {!Runtime} runtime - Scratch runtime, used to access the storage module.
  * @param {?int} optVersion - Version of Scratch that the costume comes from. If this is set
  *     to 2, scratch 3 will perform an upgrade step to handle quirks in SVGs from Scratch 2.0.
+ * @param {?boolean} optFitToArtboard - If true, scale down SVGs to fit into the size of the stage.
  * @returns {?Promise} - a promise which will resolve after skinId is set, or null on error.
  */
-const loadCostumeFromAsset = function (costume, runtime, optVersion) {
+const loadCostumeFromAsset = function (costume, runtime, optVersion, optFitToArtboard) {
     costume.assetId = costume.asset.assetId;
     const renderer = runtime.renderer;
     if (!renderer) {
@@ -259,7 +269,7 @@ const loadCostumeFromAsset = function (costume, runtime, optVersion) {
         rotationCenter = [costume.rotationCenterX, costume.rotationCenterY];
     }
     if (costume.asset.assetType.runtimeFormat === AssetType.ImageVector.runtimeFormat) {
-        return loadVector_(costume, runtime, rotationCenter, optVersion)
+        return loadVector_(costume, runtime, rotationCenter, optVersion, optFitToArtboard)
             .catch(error => {
                 log.warn(`Error loading vector image: ${error.name}: ${error.message}`);
                 // Use default asset if original fails to load
@@ -284,9 +294,10 @@ const loadCostumeFromAsset = function (costume, runtime, optVersion) {
  * @param {!Runtime} runtime - Scratch runtime, used to access the storage module.
  * @param {?int} optVersion - Version of Scratch that the costume comes from. If this is set
  *     to 2, scratch 3 will perform an upgrade step to handle quirks in SVGs from Scratch 2.0.
+ * @param {?boolean} optFitToArtboard - If true, scale down SVGs to fit into the size of the stage.
  * @returns {?Promise} - a promise which will resolve after skinId is set, or null on error.
  */
-const loadCostume = function (md5ext, costume, runtime, optVersion) {
+const loadCostume = function (md5ext, costume, runtime, optVersion, optFitToArtboard) {
     const idParts = StringUtil.splitFirst(md5ext, '.');
     const md5 = idParts[0];
     const ext = idParts[1].toLowerCase();
@@ -294,7 +305,7 @@ const loadCostume = function (md5ext, costume, runtime, optVersion) {
 
     if (costume.asset) {
         // Costume comes with asset. It could be coming from camera, image upload, drag and drop, or file
-        return loadCostumeFromAsset(costume, runtime, optVersion);
+        return loadCostumeFromAsset(costume, runtime, optVersion, optFitToArtboard);
     }
 
     // Need to load the costume from storage. The server should have a reference to this md5.
@@ -329,7 +340,7 @@ const loadCostume = function (md5ext, costume, runtime, optVersion) {
         if (assetArray[1]) {
             costume.textLayerAsset = assetArray[1];
         }
-        return loadCostumeFromAsset(costume, runtime, optVersion);
+        return loadCostumeFromAsset(costume, runtime, optVersion, optFitToArtboard);
     });
 };
 

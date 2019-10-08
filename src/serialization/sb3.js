@@ -830,11 +830,12 @@ const deserializeBlocks = function (blocks) {
  * @param {!object} object From-JSON "Scratch object:" sprite, stage, watcher.
  * @param {!Runtime} runtime Runtime object to load all structures into.
  * @param {JSZip} zip Sb3 file describing this project (to load assets from)
+ * @param {?boolean} optFitToArtboard - If true, scale down SVGs to fit into the size of the stage.
  * @return {?{costumePromises:Array.<Promise>,soundPromises:Array.<Promise>,soundBank:SoundBank}}
  * Object of arrays of promises for asset objects used in Sprites. As well as a
  * SoundBank for the sound assets. null for unsupported objects.
  */
-const parseScratchAssets = function (object, runtime, zip) {
+const parseScratchAssets = function (object, runtime, zip, optFitToArtboard) {
     if (!object.hasOwnProperty('name')) {
         // Watcher/monitor - skip this object until those are implemented in VM.
         // @todo
@@ -875,7 +876,7 @@ const parseScratchAssets = function (object, runtime, zip) {
         // any translation that needs to happen will happen in the process
         // of building up the costume object into an sb3 format
         return deserializeCostume(costume, runtime, zip)
-            .then(() => loadCostume(costumeMd5Ext, costume, runtime));
+            .then(() => loadCostume(costumeMd5Ext, costume, runtime, 3 /* optVersion */, optFitToArtboard));
         // Only attempt to load the costume after the deserialization
         // process has been completed
     });
@@ -1209,9 +1210,10 @@ const replaceUnsafeCharsInVariableIds = function (targets) {
  * @param  {Runtime} runtime - Runtime instance
  * @param {JSZip} zip - Sb3 file describing this project (to load assets from)
  * @param {boolean} isSingleSprite - If true treat as single sprite, else treat as whole project
+ * @param {?boolean} optFitToArtboard - If true, scale down SVGs to fit into the size of the stage.
  * @returns {Promise.<ImportedProject>} Promise that resolves to the list of targets after the project is deserialized
  */
-const deserialize = function (json, runtime, zip, isSingleSprite) {
+const deserialize = function (json, runtime, zip, isSingleSprite, optFitToArtboard) {
     const extensions = {
         extensionIDs: new Set(),
         extensionURLs: new Map()
@@ -1229,7 +1231,7 @@ const deserialize = function (json, runtime, zip, isSingleSprite) {
 
     return Promise.resolve(
         targetObjects.map(target =>
-            parseScratchAssets(target, runtime, zip))
+            parseScratchAssets(target, runtime, zip, optFitToArtboard))
     )
         // Force this promise to wait for the next loop in the js tick. Let
         // storage have some time to send off asset requests.
